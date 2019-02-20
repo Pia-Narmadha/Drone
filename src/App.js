@@ -1,4 +1,5 @@
 import React from "react";
+import 'bootstrap/dist/css/bootstrap.css';
 import createStore from "./store";
 import { Provider } from "react-redux";
 import { ToastContainer } from "react-toastify";

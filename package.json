@@ -5,10 +5,14 @@
   "dependencies": {
     "@material-ui/core": "^3.3.1",
     "@material-ui/icons": "^3.0.1",
+    "bootstrap": "^4.3.1",
+    "google-map-react": "^1.1.2",
     "react": "^16.6.0",
+    "react-chartjs": "^1.2.0",
+    "react-charts": "^2.0.0-alpha.12",
     "react-dom": "^16.6.0",
     "react-redux": "^5.0.7",
-    "react-scripts": "2.0.5",
+    "react-scripts": "^2.1.5",
     "react-toastify": "^4.4.0",
     "redux": "^4.0.1",
     "redux-saga": "^0.16.2"

@@ -1,4 +1,5 @@
-import { takeEvery, call, put, cancel, all } from "redux-saga/effects";
+import { take, race, takeEvery, call, put, cancel, all } from "redux-saga/effects";
+import {delay} from "redux-saga";
 import API from "../api";
 import * as actions from "../actions";
 
@@ -16,16 +17,50 @@ import * as actions from "../actions";
   Also -- the `*` in function is important; turns it into a "generator"
 
 */
+function* pollSagaWorker(action) {
+  const id = action.id;
+  while (true) {
+    try 
+    {
+      console.log("polling every 4s");
+      const { data } = yield call(API.findWeatherbyId, id);
+      yield put({ type: actions.WEATHER_DATA_RECEIVED, data });
+      yield call(delay, 4000);
+    } 
+    catch (error) 
+    {
+      yield put({ type: actions.API_ERROR, code: error.code });
+      yield put({ type: actions.POLL_STOP});
+      yield cancel();
+      return;
+    }
+  }
+}
+
+function* pollSagaWatcher(action) {
+  //const {id} = action;
+  while (true) {
+    yield take(actions.POLL_START);
+    yield race([
+      call(pollSagaWorker, action),
+      take(actions.POLL_STOP)
+    ]);
+  }
+}
 
 function* watchWeatherIdReceived(action) {
-  const { id } = action;
-  const { error, data } = yield call(API.findWeatherbyId, id);
-  if (error) {
+  const id = action.id;
+  try{
+    const {data } = yield call(API.findWeatherbyId, id);
+    yield put({ type: actions.WEATHER_DATA_RECEIVED, data });
+    yield put({type:actions.CHANGE_CHART_DATA});
+  }
+  catch(error)
+  {
     yield put({ type: actions.API_ERROR, code: error.code });
     yield cancel();
     return;
   }
-  yield put({ type: actions.WEATHER_DATA_RECEIVED, data });
 }
 
 function* watchFetchWeather(action) {
@@ -36,7 +71,6 @@ function* watchFetchWeather(action) {
     longitude
   );
   if (error) {
-    console.log({ error });
     yield put({ type: actions.API_ERROR, code: error.code });
     yield cancel();
     return;
@@ -47,13 +81,15 @@ function* watchFetchWeather(action) {
     yield cancel();
     return;
   }
+  yield put({type:actions.POLL_START, id:location}); 
   yield put({ type: actions.WEATHER_ID_RECEIVED, id: location });
 }
 
 function* watchAppLoad() {
   yield all([
     takeEvery(actions.FETCH_WEATHER, watchFetchWeather),
-    takeEvery(actions.WEATHER_ID_RECEIVED, watchWeatherIdReceived)
+    takeEvery(actions.WEATHER_ID_RECEIVED, watchWeatherIdReceived),
+    takeEvery(actions.POLL_START,pollSagaWatcher),
   ]);
 }
 
