@@ -29,6 +29,10 @@ const initialState = {
                             'Visibility',
                             'Wind speed'
                             ],
+  currentPinPointIndex : 0,
+  mapData : {data:[],},
+  mapDataLoading:true,
+  currentAppView:"ChartView"
 };
 
 const toF = c => (c * 9) / 5 + 32;
@@ -62,6 +66,15 @@ const weatherDataRecevied = (state, action) => {
   };
 };
 
+const mapWeatherDataRecevied = (state, action) => {
+  const { data } = action;
+  return {
+    ...state,
+    mapDataLoading:false,
+    mapData:data,
+  };
+};
+
 const newTabSelected = (state,action) => {
   return {
     ...state,
@@ -82,13 +95,39 @@ const changeChartData = (state,action) =>{
     chartData:[{label:typeOfWeather,data:chartData}],
   }
 }
-
+const changePinPoint = (state,action) =>{
+  //action should have the details about the type of weather as its data.
+  let mod = state.mapData.length <= 0 ? 1:state.mapData.data.length;
+  const newPinPointIndex = (state.currentPinPointIndex + 1 )% mod;
+  return {
+    ...state,
+    currentPinPointIndex:newPinPointIndex,
+  }
+}
+const changeAppView = (state,action) =>{
+  const newAppView = (state.currentAppView ==="ChartView" )? "MapView" : "ChartView";
+  return {
+    ...state,
+    currentAppView: newAppView,
+  }
+}
+const initializePinPoint = (state,action) =>{
+  
+  return {
+    ...state,
+    currentPinPointIndex: 0,
+  }
+}
 const handlers = {
   [actions.FETCH_WEATHER]: startLoading,
   [actions.WEATHER_ID_RECEIVED]: weatherIDReceived,
   [actions.WEATHER_DATA_RECEIVED]: weatherDataRecevied,
   [actions.NEW_TAB_SELECTED]:newTabSelected,
   [actions.CHANGE_CHART_DATA]:changeChartData,
+  [actions.MAP_WEATHER_DATA_RECEIVED]:mapWeatherDataRecevied,
+  [actions.CHANGE_MAP_PIN_POINT]:changePinPoint,
+  [actions.CHANGE_APP_VIEW]: changeAppView,
+  [actions.INITIALIZE_PIN_POINT]:initializePinPoint,
 };
 
 export default (state = initialState, action) => {
