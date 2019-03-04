@@ -48,7 +48,7 @@ class MapBoard extends React.Component{
                         <AnyReactComponent
                           lat={center.lat}
                           lng={center.lng}
-                          text={temperature+"F"}
+                          text={temperature+"C"}
                         />
                         
                       </GoogleMapReact>
